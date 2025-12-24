@@ -87,9 +87,10 @@ export const register = async ({ email, password, role }) => {
 };
 
 export const login = async ({ email, password }) => {
+    console.log(`${email} - ${password}`)
   const user = db.prepare(`SELECT * FROM users WHERE email = ?`).get(email);
   if (!user) throw new Error("Invalid email or password");
-
+    console.table(user)
   const match = await bcrypt.compare(password, user.password);
   if (!match) throw new Error("Invalid email or password");
 
@@ -98,10 +99,12 @@ export const login = async ({ email, password }) => {
     JWT_SECRET,
     { expiresIn: "7d" }
   );
-
+  console.log(token)
   return { message: "Login successful", token };
 };
 
 
-
+export const getUserById = (id) => {
+  return db.prepare(`SELECT id, email, role, createdAt FROM users WHERE id = ?`).get(id);
+};
 
