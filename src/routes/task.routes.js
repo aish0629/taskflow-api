@@ -5,8 +5,11 @@ import { requireAdmin } from "../middlewares/role.middleware.js";
 import {
   createTaskController,
   listTasksController,
-  updateStatusController
+  updateStatusController,
+  searchTasksController, // <-- ADD THIS
+  dashboardController     // (if added)
 } from "../controllers/task.controller.js";
+
 
 const router = Router();
 
@@ -18,5 +21,8 @@ router.get("/:projectId", authMiddleware, listTasksController);
 
 // ADMIN updates task status
 router.put("/:taskId/status", authMiddleware, requireAdmin, updateStatusController);
+router.get("/", authMiddleware, searchTasksController);
+router.get("/", authMiddleware, searchTasksController);
+router.get("/dashboard/stats", authMiddleware, dashboardController);
 
 export default router;

@@ -56,3 +56,33 @@ export const updateStatusController = (req, res) => {
     res.status(500).json({ error: err.message });
   }
 };
+import { searchTasks } from "../services/task.service.js";
+
+export const searchTasksController = (req, res) => {
+  try {
+    const { projectId, status, search, page = 1, limit = 10 } = req.query;
+
+    const tasks = searchTasks({
+      projectId,
+      status,
+      search,
+      page: Number(page),
+      limit: Number(limit)
+    });
+
+    res.json(tasks);
+  } catch (err) {
+    res.status(500).json({ error: err.message });
+  }
+};
+import { getDashboardStats } from "../services/task.service.js";
+
+export const dashboardController = (req, res) => {
+  try {
+    const stats = getDashboardStats(req.user.userId);
+    res.json(stats);
+  } catch (err) {
+    res.status(500).json({ error: err.message });
+  }
+};
+

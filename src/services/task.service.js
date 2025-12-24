@@ -41,3 +41,61 @@ export const updateTaskStatus = (taskId, status) => {
 export const getTaskById = (taskId) => {
   return db.prepare(`SELECT * FROM tasks WHERE id = ?`).get(taskId);
 };
+export const searchTasks = ({ projectId, status, search, page, limit }) => {
+  let query = `SELECT * FROM tasks WHERE 1=1`;
+  const params = [];
+
+  // filter by project
+  if (projectId) {
+    query += ` AND projectId = ?`;
+    params.push(projectId);
+  }
+
+  // filter by status
+  if (status) {
+    query += ` AND status = ?`;
+    params.push(status);
+  }
+
+  // search on title + description
+  if (search) {
+    query += ` AND (title LIKE ? OR description LIKE ?)`;
+    params.push(`%${search}%`, `%${search}%`);
+  }
+
+  // pagination
+  const offset = (page - 1) * limit;
+  query += ` ORDER BY createdAt DESC LIMIT ? OFFSET ?`;
+  params.push(limit, offset);
+
+  return db.prepare(query).all(...params);
+};
+export const getDashboardStats = (userId) => {
+  const total = db.prepare(`SELECT COUNT(*) as count FROM tasks`).get().count;
+
+  const completed = db.prepare(`
+    SELECT COUNT(*) as count FROM tasks WHERE status = 'DONE'
+  `).get().count;
+
+  const pending = db.prepare(`
+    SELECT COUNT(*) as count FROM tasks WHERE status != 'DONE'
+  `).get().count;
+
+  const assignedToUser = db.prepare(`
+    SELECT COUNT(*) as count FROM tasks WHERE assignedTo = ?
+  `).get(userId).count;
+
+  const perProject = db.prepare(`
+    SELECT projectId, COUNT(*) as count
+    FROM tasks
+    GROUP BY projectId
+  `).all();
+
+  return {
+    total,
+    completed,
+    pending,
+    assignedToUser,
+    perProject
+  };
+};
