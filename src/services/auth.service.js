@@ -2,11 +2,15 @@ import db from "../database.js";
 import bcrypt from "bcrypt";
 import jwt from "jsonwebtoken";
 import { randomUUID } from "crypto";
-
+import { isValidEmail } from "../utils/validators.js";
+import { AppError } from "../utils/AppError.js";
 const JWT_SECRET = process.env.JWT_SECRET || "devsecret";
 
 export const register = async ({ email, password, role }) => {
-  if (!email || !password) {
+  if (!isValidEmail(email)) {
+  throw new AppError("Invalid email format", 400);
+}
+    if (!email || !password) {
     throw new Error("Email and password required");
   }
 
@@ -25,8 +29,12 @@ export const register = async ({ email, password, role }) => {
 };
 
 export const login = async ({ email, password }) => {
+      if (!isValidEmail(email)) {
+  throw new AppError("Invalid email format", 400);
+}
     console.log(`${email} - ${password}`)
-  const user = db.prepare(`SELECT * FROM users WHERE email = ?`).get(email);
+  
+    const user = db.prepare(`SELECT * FROM users WHERE email = ?`).get(email);
   if (!user) throw new Error("Invalid email or password");
     console.table(user)
   const match = await bcrypt.compare(password, user.password);

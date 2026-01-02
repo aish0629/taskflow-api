@@ -10,16 +10,19 @@ export const createProjectController = (req, res) => {
       createdBy: req.user.userId
     });
 
-    res.status(201).json(project);
+    res.status(201).json({success: true,
+      data: project});
   } catch (err) {
-    res.status(500).json({ error: err.message });
+    res.status(500).json({ success: false,
+      data: null ,error: err.message });
   }
 };
 
 export const listProjectsController = (req, res) => {
   try {
     const projects = listProjects();
-    res.json(projects);
+    res.json({success: true,
+      data: projects});
   } catch (err) {
     res.status(500).json({ error: err.message });
   }

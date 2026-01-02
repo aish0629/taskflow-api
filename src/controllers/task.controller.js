@@ -4,11 +4,15 @@ import {
   updateTaskStatus,
   getTaskById
 } from "../services/task.service.js";
+import { AppError } from "../utils/AppError.js";
+
 
 export const createTaskController = (req, res) => {
   try {
     const { title, description, projectId, assignedTo } = req.body;
-
+    if (!title) {
+  throw new AppError("Task title required", 400);
+}
     if (!title || !projectId || !assignedTo) {
       return res.status(400).json({ error: "Missing required fields" });
     }
@@ -23,7 +27,7 @@ export const createTaskController = (req, res) => {
 
     res.status(201).json(task);
   } catch (err) {
-    res.status(500).json({ error: err.message });
+    res.status(err.statusCode).json({ error: err.message });
   }
 };
 
@@ -49,8 +53,15 @@ export const updateStatusController = (req, res) => {
 
     let task = getTaskById(taskId);
     if (!task) return res.status(404).json({ error: "Task not found" });
-
+    const oldStatus = task.status;
     task = updateTaskStatus(taskId, status);
+    logTaskActivity({
+    taskId,
+    action: "STATUS_CHANGED",
+    oldValue: oldStatus,
+    newValue: status,
+    performedBy: req.user.userId
+    });
     res.json(task);
   } catch (err) {
     res.status(500).json({ error: err.message });
@@ -85,4 +96,6 @@ export const dashboardController = (req, res) => {
     res.status(500).json({ error: err.message });
   }
 };
+import { logTaskActivity } from "../services/task-log.service.js";
+
 

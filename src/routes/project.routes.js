@@ -12,3 +12,47 @@ router.post("/", authMiddleware, requireAdmin, createProjectController);
 router.get("/", authMiddleware, listProjectsController);
 
 export default router;
+
+/**
+ * @swagger
+ * tags:
+ *   name: Projects
+ *   description: Project management APIs
+ */
+
+/**
+ * @swagger
+ * /projects:
+ *   post:
+ *     summary: Create a project (ADMIN only)
+ *     tags: [Projects]
+ *     security:
+ *       - bearerAuth: []
+ *     requestBody:
+ *       required: true
+ *       content:
+ *         application/json:
+ *           schema:
+ *             type: object
+ *             required:
+ *               - name
+ *             properties:
+ *               name:
+ *                 type: string
+ *     responses:
+ *       201:
+ *         description: Project created
+ */
+
+/**
+ * @swagger
+ * /projects:
+ *   get:
+ *     summary: List all projects
+ *     tags: [Projects]
+ *     security:
+ *       - bearerAuth: []
+ *     responses:
+ *       200:
+ *         description: List of projects
+ */

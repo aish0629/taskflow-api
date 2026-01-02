@@ -1,4 +1,6 @@
 import db from "./database.js";
+console.log("Initializing SQLite database...");
+console.log("Initializing SQLite database...");
 
 export function initializeDatabase() {
   // Users table
@@ -38,4 +40,49 @@ export function initializeDatabase() {
       FOREIGN KEY(assignedTo) REFERENCES users(id)
     )
   `).run();
+  // Task activity logs
+db.prepare(`
+  CREATE TABLE IF NOT EXISTS task_logs (
+    id TEXT PRIMARY KEY,
+    taskId TEXT NOT NULL,
+    action TEXT NOT NULL,
+    oldValue TEXT,
+    newValue TEXT,
+    performedBy TEXT NOT NULL,
+    createdAt TEXT NOT NULL,
+    FOREIGN KEY(taskId) REFERENCES tasks(id),
+    FOREIGN KEY(performedBy) REFERENCES users(id)
+  )
+`).run();
+
+// Task comments
+db.prepare(`
+  CREATE TABLE IF NOT EXISTS task_comments (
+    id TEXT PRIMARY KEY,
+    taskId TEXT NOT NULL,
+    comment TEXT NOT NULL,
+    commentedBy TEXT NOT NULL,
+    createdAt TEXT NOT NULL,
+    FOREIGN KEY(taskId) REFERENCES tasks(id),
+    FOREIGN KEY(commentedBy) REFERENCES users(id)
+  )
+`).run();
+
+// Admin audit logs
+db.prepare(`
+  CREATE TABLE IF NOT EXISTS audit_logs (
+    id TEXT PRIMARY KEY,
+    action TEXT NOT NULL,
+    entityType TEXT NOT NULL,
+    entityId TEXT,
+    performedBy TEXT NOT NULL,
+    createdAt TEXT NOT NULL,
+    FOREIGN KEY(performedBy) REFERENCES users(id)
+  )
+`).run();
+db.prepare(`CREATE INDEX IF NOT EXISTS idx_tasks_projectId ON tasks(projectId)`).run();
+db.prepare(`CREATE INDEX IF NOT EXISTS idx_tasks_assignedTo ON tasks(assignedTo)`).run();
+db.prepare(`CREATE INDEX IF NOT EXISTS idx_tasks_status ON tasks(status)`).run();
+db.prepare(`CREATE INDEX IF NOT EXISTS idx_users_email ON users(email)`).run();
+
 }
